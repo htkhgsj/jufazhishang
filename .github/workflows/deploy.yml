@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main  # 或者你的主分支名，如 'master' 或 'dev'
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.*"
+      - github/workflows/deploy.yml
 
 jobs:
   deploy:
@@ -46,17 +53,10 @@ jobs:
           SCRIPT_AFTER: |
             echo "🔧 Fixing permissions for Nginx..."
             
-            # 1. 确保整个目录树对“其他人”是可读和可执行的 (755 对于静态网站是安全的)
-            # 这样无论 Nginx 跑在 www-data 还是 nginx 用户下，都能读取
+            # 1. 确保整个目录树对“其他人”是可读和可执行的
             chmod -R 755 ${{ secrets.TARGET_PATH }}/dist
             
-            # 2. (可选但推荐) 如果知道 Nginx 的具体运行用户，可以直接改所有者
-            # 比如 Ubuntu 上是 www-data, CentOS 上是 nginx
-            # 下面这行需要你先确认服务器上的用户是谁，如果不确定，只保留上面的 chmod 755 即可
-            # chown -R www-data:www-data ${{ secrets.TARGET_PATH }}/dist
-            
             echo "🔄 Reloading Nginx..."
-            # 因为是 root 用户执行，所以不需要 sudo
             systemctl reload nginx
             
             echo "✅ Deployment finished!"
