@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import './App.css'
 import mdContent from './markdown/siteDevExp.md?raw'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 type TocItem = {
   id: string
@@ -177,16 +178,13 @@ const markdownComponents: Components = {
     )
   },
 }
-
-function App() {
+function SiteDevExpPage() {
   return (
     <div className="app-shell">
       <main className="reader-page">
         <header className="article-hero">
           <div className="hero-copy">
-            {/* <p className="hero-kicker">站点部署记录</p> */}
             <h1 className="hero-title">{articleDocument.title}</h1>
-            {/* <p className="hero-intro">{articleDocument.intro}</p> */}
           </div>
 
           <div className="hero-footer">
@@ -239,6 +237,17 @@ function App() {
         </div>
       </main>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/siteDevExp" />} />
+        <Route path="/siteDevExp" element={<SiteDevExpPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
