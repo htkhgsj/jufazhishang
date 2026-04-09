@@ -3,14 +3,15 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - main  # 或者你的主分支名，如 'master' 或 'dev'
+      - dev  # 保持你的分支名
     paths:
-      - "src/**"
-      - "public/**"
-      - "package.json"
-      - "package-lock.json"
-      - "vite.config.*"
-      - github/workflows/deploy.yml
+      # 【修改】只有 frontend 文件夹下的变动才会触发
+      - "frontend/src/**"
+      - "frontend/public/**"
+      - "frontend/package.json"
+      - "frontend/package-lock.json"
+      - "frontend/vite.config.*"
+      - ".github/workflows/deploy.yml"
 
 jobs:
   deploy:
@@ -22,20 +23,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 设置 Node.js 环境 (根据你的项目需求调整版本)
+      # 2. 设置 Node.js 环境
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # 或者 20, 取决于你的项目
+          node-version: '20'
+          # 【修改】指定缓存文件的路径
           cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       # 3. 安装依赖
       - name: Install dependencies
+        # 【修改】进入 frontend 目录执行
         run: npm ci
+        working-directory: frontend
 
       # 4. 构建项目
       - name: Build project
+        # 【修改】进入 frontend 目录执行
         run: npm run build
+        working-directory: frontend
 
       # 5. 通过 SSH 部署文件
       - name: Deploy via SSH
@@ -45,18 +52,13 @@ jobs:
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_PORT: ${{ secrets.SSH_PORT }}
-          SOURCE: "dist/"       # 上传本地的 dist 文件夹内容
-          TARGET: "${{ secrets.TARGET_PATH }}/dist" # 上传到服务器的 /opt/jufazhishang/dist
-          # 注意：这里我们直接覆盖 dist 目录，保持目录结构清晰
+          # 【修改】构建产物现在在 frontend/dist/
+          SOURCE: "frontend/dist/" 
+          TARGET: "${{ secrets.TARGET_PATH }}/dist" 
           
-           # 【关键】上传后执行的脚本，用于修复权限
           SCRIPT_AFTER: |
             echo "🔧 Fixing permissions for Nginx..."
-            
-            # 1. 确保整个目录树对“其他人”是可读和可执行的
             chmod -R 755 ${{ secrets.TARGET_PATH }}/dist
-            
             echo "🔄 Reloading Nginx..."
-            systemctl reload nginx
-            
+            sudo systemctl reload nginx
             echo "✅ Deployment finished!"
