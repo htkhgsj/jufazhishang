@@ -2,9 +2,10 @@ import { isValidElement, type ReactNode } from 'react'
 import type { Components } from 'react-markdown'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import './App.css'
+import styles from './App.module.css'
 import mdContent from './markdown/siteDevExp.md?raw'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import Test from './test'
 
 type TocItem = {
   id: string
@@ -132,70 +133,65 @@ function parseDocument(markdown: string): ParsedDocument {
   }
 }
 
-function createHeading(tag: 'h2' | 'h3' | 'h4', className: string) {
+const articleDocument = parseDocument(mdContent)
+const topLevelSections = articleDocument.toc.filter(({ level }) => level === 1)
+const markdownComponents: Components = {
+  // 传入 styles 对象中的类名
+  h1: createHeading('h2', 'article-section-title'), 
+  h2: createHeading('h3', 'article-subsection-title'),
+  
+  a({ href = '', children, ...props }) {
+    return (
+      <a {...props} className={styles['article-link']} href={href}>
+        {children}
+      </a>
+    )
+  },
+  
+  table({ children }) {
+    return (
+      <div className={styles['article-table']}>
+        <table>{children}</table>
+      </div>
+    )
+  },
+};
+
+// 辅助函数也要改：
+function createHeading(tag: 'h2' | 'h3' | 'h4', classNameKey: string) {
   return function Heading({ children }: { children?: ReactNode }) {
     const text = flattenText(children).trim()
     const id = slugify(text)
     const Tag = tag
 
     return (
-      <Tag className={className} id={id}>
-        <a className="heading-anchor" href={`#${id}`}>
+      <Tag className={styles[classNameKey]} id={id}> {/* 关键点 */}
+        <a className={styles['heading-anchor']} href={`#${id}`}> {/* 关键点 */}
           {children}
         </a>
       </Tag>
     )
   }
 }
-
-const articleDocument = parseDocument(mdContent)
-const topLevelSections = articleDocument.toc.filter(({ level }) => level === 1)
-
-const markdownComponents: Components = {
-  h1: createHeading('h2', 'article-section-title'),
-  h2: createHeading('h3', 'article-subsection-title'),
-  h3: createHeading('h4', 'article-minor-title'),
-  a({ href = '', children, ...props }) {
-    const isExternalLink = /^https?:\/\//.test(href)
-
-    return (
-      <a
-        {...props}
-        className="article-link"
-        href={href}
-        rel={isExternalLink ? 'noreferrer' : undefined}
-        target={isExternalLink ? '_blank' : undefined}
-      >
-        {children}
-      </a>
-    )
-  },
-  table({ children }) {
-    return (
-      <div className="article-table">
-        <table>{children}</table>
-      </div>
-    )
-  },
-}
 function SiteDevExpPage() {
   return (
-    <div className="app-shell">
-      <main className="reader-page">
-        <header className="article-hero">
-          <div className="hero-copy">
-            <h1 className="hero-title">{articleDocument.title}</h1>
+    /* 使用 styles['class-name'] 语法，因为你的类名包含中划线 */
+    <div className={styles['app-shell']}>
+      <main className={styles['reader-page']}>
+        <header className={styles['article-hero']}>
+          <div className={styles['hero-copy']}>
+            <h1 className={styles['hero-title']}>{articleDocument.title}</h1>
           </div>
 
-          <div className="hero-footer">
-            <div className="hero-stats" aria-label="文章概览">
+          <div className={styles['hero-footer']}>
+            <div className={styles['hero-stats']} aria-label="文章概览">
               <span>{topLevelSections.length || 1} titles</span>
             </div>
 
             {topLevelSections.length > 0 && (
-              <div className="hero-tags" aria-label="主题快速跳转">
+              <div className={styles['hero-tags']} aria-label="主题快速跳转">
                 {topLevelSections.map((item) => (
-                  <a className="hero-tag" href={`#${item.id}`} key={item.id}>
+                  <a className={styles['hero-tag']} href={`#${item.id}`} key={item.id}>
                     {item.text}
                   </a>
                 ))}
@@ -204,15 +200,16 @@ function SiteDevExpPage() {
           </div>
         </header>
 
-        <div className="article-layout">
+        <div className={styles['article-layout']}>
           {articleDocument.toc.length > 0 && (
-            <aside aria-label="文章目录" className="article-sidebar">
-              <div className="toc-card">
-                <p className="toc-eyebrow">目录导航</p>
-                <nav className="toc-list">
+            <aside aria-label="文章目录" className={styles['article-sidebar']}>
+              <div className={styles['toc-card']}>
+                <p className={styles['toc-eyebrow']}>目录导航</p>
+                <nav className={styles['toc-list']}>
                   {articleDocument.toc.map((item) => (
                     <a
-                      className={`toc-link toc-level-${item.level}`}
+                      /* 动态类名的处理方式：联合多个模块化类名 */
+                      className={`${styles['toc-link']} ${styles[`toc-level-${item.level}`]}`}
                       href={`#${item.id}`}
                       key={item.id}
                     >
@@ -224,8 +221,8 @@ function SiteDevExpPage() {
             </aside>
           )}
 
-          <article className="article-card">
-            <div className="article-content">
+          <article className={styles['article-card']}>
+            <div className={styles['article-content']}>
               <ReactMarkdown
                 components={markdownComponents}
                 remarkPlugins={[remarkGfm]}
@@ -244,7 +241,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/siteDevExp" />} />
+        <Route path="/" element={<Test />} />
         <Route path="/siteDevExp" element={<SiteDevExpPage />} />
       </Routes>
     </BrowserRouter>
