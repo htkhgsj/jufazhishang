@@ -1,22 +1,18 @@
 import React, { useState } from "react";
-
+import { poemSep } from "./api/poem";
 export default function App() {
-  const [responseData, setResponseData] = useState<string>("暂无数据");
+  const [loading, setLoading] = useState(false);  
+  const [responseData, setResponseData] = useState('');
   const [inputValue, setInputValue] = useState('');     // 输入框的内容
   const sendData = async () => {
+    setLoading(true);
     try {
-      const response = await fetch("http://localhost:3001/poemSep", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ poem: inputValue }), // 将输入框的内容作为请求体发送
-      });
-
-      const data = await response.json();
-      setResponseData(JSON.stringify(data, null, 2));
+        const data = await poemSep(inputValue);
+        setResponseData(data.data);
     } catch (error) {
-      setResponseData("请求失败: " + error);
+        setResponseData("请求失败: " + error);
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -38,7 +34,9 @@ export default function App() {
       }}
     />
   </div>
-      <button onClick={sendData}>发送请求</button>
+      <button onClick={sendData} disabled={loading}>
+        {loading ? "发送中..." : "发送请求"}
+      </button>
 
       {/* 预留显示区域 */}
       <div

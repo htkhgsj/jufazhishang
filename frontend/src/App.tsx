@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm'
 import styles from './App.module.css'
 import mdContent from './markdown/siteDevExp.md?raw'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Test from './test'
+import Poem from './poem'
 
 type TocItem = {
   id: string
@@ -241,7 +241,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Test />} />
+        <Route path="/" element={<Poem />} />
         <Route path="/siteDevExp" element={<SiteDevExpPage />} />
       </Routes>
     </BrowserRouter>
