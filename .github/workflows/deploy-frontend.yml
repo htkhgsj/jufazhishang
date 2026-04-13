@@ -50,7 +50,7 @@ jobs:
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_PORT: ${{ secrets.SSH_PORT }}
 
-          SOURCE: "frontend/dist"
+          SOURCE: "frontend/dist/"
           TARGET: "${{ secrets.TARGET_PATH }}/dist"
 
           SCRIPT_AFTER: |
