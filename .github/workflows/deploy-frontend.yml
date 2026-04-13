@@ -5,6 +5,7 @@ on:
     branches:
       - dev  # 保持你的分支名
     paths:
+      - ".github/workflows/**"
       # 【修改】只有 frontend 文件夹下的变动才会触发
       - "frontend/src/**"
       - "frontend/public/**"
