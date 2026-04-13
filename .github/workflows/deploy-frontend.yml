@@ -3,10 +3,16 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - dev
+      - dev  # 保持你的分支名
     paths:
-      - "frontend/**"
       - ".github/workflows/**"
+      # 【修改】只有 frontend 文件夹下的变动才会触发
+      - "frontend/src/**"
+      - "frontend/public/**"
+      - "frontend/package.json"
+      - "frontend/package-lock.json"
+      - "frontend/vite.config.*"
+      - ".github/workflows/deploy.yml"
 
 jobs:
   deploy:
@@ -14,36 +20,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      # 1 checkout
+      # 1. 检出代码
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2 install pnpm
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      # 3 node
-      - name: Setup Node
+      # 2. 设置 Node.js 环境
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: pnpm
-          cache-dependency-path: frontend/pnpm-lock.yaml
+          node-version: '20'
+          # 【修改】指定缓存文件的路径
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
-      # 4 install
+      # 3. 安装依赖
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # 【修改】进入 frontend 目录执行
+        run: |
+          rm -rf node_modules
+          npm ci --include=optional
+
         working-directory: frontend
 
-      # 5 build
+      # 4. 构建项目
       - name: Build project
-        run: pnpm run build
+        # 【修改】进入 frontend 目录执行
+        run: npm run build
         working-directory: frontend
 
-      # 6 deploy
+      # 5. 通过 SSH 部署文件
       - name: Deploy via SSH
         uses: easingthemes/ssh-deploy@main
         with:
@@ -51,15 +56,13 @@ jobs:
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_PORT: ${{ secrets.SSH_PORT }}
-
-          SOURCE: "frontend"
-          TARGET: "${{ secrets.TARGET_PATH }}"
-
+          # 【修改】构建产物现在在 frontend/dist/
+          SOURCE: "frontend/dist/" 
+          TARGET: "${{ secrets.TARGET_PATH }}/dist" 
+          
           SCRIPT_AFTER: |
-            echo "🔧 Fixing permissions..."
-            chmod -R 755 ${{ secrets.TARGET_PATH }}
-
+            echo "🔧 Fixing permissions for Nginx..."
+            chmod -R 755 ${{ secrets.TARGET_PATH }}/dist
             echo "🔄 Reloading Nginx..."
             sudo systemctl reload nginx
-
             echo "✅ Deployment finished!"
