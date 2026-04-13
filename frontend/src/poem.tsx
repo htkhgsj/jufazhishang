@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { poemSep } from "./api/poem";
 export default function App() {
   const [loading, setLoading] = useState(false);  

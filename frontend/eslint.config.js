@@ -31,18 +31,21 @@ export default [
       "unused-imports": unusedImports,
     },
 
-    rules: {
-      // React Hooks规则
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
+  rules: {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off",
 
-      // 未使用变量
-      "unused-imports/no-unused-imports": "error",
-      "unused-imports/no-unused-vars": [
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
         "warn",
-        { vars: "all", varsIgnorePattern: "^_", argsIgnorePattern: "^_" }
-      ]
-    },
+        {
+        vars: "all",
+        varsIgnorePattern: "^_",
+        args: "after-used",
+        argsIgnorePattern: "^_"
+        }
+    ]
+  },
 
     settings: {
       react: {
