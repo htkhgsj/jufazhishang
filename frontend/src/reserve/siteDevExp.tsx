@@ -5,7 +5,6 @@ import remarkGfm from 'remark-gfm'
 import styles from './App.module.css'
 import mdContent from './markdown/siteDevExp.md?raw'
 import './index.css'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 type TocItem = {
   id: string
