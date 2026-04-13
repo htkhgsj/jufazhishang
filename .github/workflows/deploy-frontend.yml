@@ -35,7 +35,10 @@ jobs:
       # 3. 安装依赖
       - name: Install dependencies
         # 【修改】进入 frontend 目录执行
-        run: npm ci
+        run: |
+          rm -rf node_modules
+          npm ci --include=optional
+
         working-directory: frontend
 
       # 4. 构建项目
