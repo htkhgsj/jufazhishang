@@ -52,12 +52,12 @@ jobs:
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_PORT: ${{ secrets.SSH_PORT }}
 
-          SOURCE: "frontend/dist"
-          TARGET: "${{ secrets.TARGET_PATH }}/dist"
+          SOURCE: "frontend"
+          TARGET: "${{ secrets.TARGET_PATH }}"
 
           SCRIPT_AFTER: |
             echo "🔧 Fixing permissions..."
-            chmod -R 755 ${{ secrets.TARGET_PATH }}/dist
+            chmod -R 755 ${{ secrets.TARGET_PATH }}
 
             echo "🔄 Reloading Nginx..."
             sudo systemctl reload nginx
